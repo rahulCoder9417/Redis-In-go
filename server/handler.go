@@ -43,7 +43,7 @@ func HandleCommand(message string) string {
 
 		key := parts[1]
 		value := parts[2]
-		var expiry time.time
+		var expiry time.Time
 
 if len(parts)>=5{
 			if strings.ToUpper(parts[3]) == "EX" {
