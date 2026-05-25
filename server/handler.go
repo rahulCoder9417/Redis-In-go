@@ -33,6 +33,19 @@ func HandleCommand(message string) string {
 			"\r\n" +
 			msg +
 			"\r\n"
+    
+
+	case "SET":
+		if len(parts)<3{
+			return "-ERR wrong number of arguments for 'SET'\r\n"
+		}
+
+		key := parts[1]
+		value := parts[2]
+
+		Store[key] = Value{Data: value}
+
+		return "+OK\r\n"
 
 	default:
 		return "-ERR unknown command\r\n"
