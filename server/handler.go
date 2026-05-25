@@ -42,7 +42,10 @@ func HandleCommand(message string) string {
 
 		key := parts[1]
 		value := parts[2]
+		
 
+		Mu.Lock()
+		defer Mu.Unlock()
 		Store[key] = Value{Data: value}
 
 		return "+OK\r\n"
@@ -54,7 +57,8 @@ func HandleCommand(message string) string {
 		}
 		
 		key := parts[1]
-		
+		Mu.RLock()
+		defer Mu.RUnlock()
 		value, exists := Store[key]
 		if !exists {
 			return "$-1\r\n"
