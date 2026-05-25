@@ -73,12 +73,19 @@ if len(parts)>=5{
 		
 		key := parts[1]
 		Mu.RLock()
-		defer Mu.RUnlock()
 		value, exists := Store[key]
+		Mu.RUnlock()
 		if !exists {
 			return "$-1\r\n"
 		}
 		
+		if !value.ExpiresAt.IsZero() && value.ExpiresAt.Before(time.Now()) {
+			Mu.Lock()
+			delete(Store, key)
+			Mu.Unlock()
+			return "$-1\r\n"
+		}
+
 		return "$" +
 			strconv.Itoa(len(value.Data)) +
 			"\r\n" +
