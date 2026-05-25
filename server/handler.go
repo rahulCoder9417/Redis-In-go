@@ -47,6 +47,24 @@ func HandleCommand(message string) string {
 
 		return "+OK\r\n"
 
+
+	case "GET":
+		if len(parts)<2{
+			return "-ERR wrong number of arguments for 'GET'\r\n"
+		}
+		
+		key := parts[1]
+		
+		value, exists := Store[key]
+		if !exists {
+			return "$-1\r\n"
+		}
+		
+		return "$" +
+			strconv.Itoa(len(value.Data)) +
+			"\r\n" +
+			value.Data +
+			"\r\n"
 	default:
 		return "-ERR unknown command\r\n"
 	}
