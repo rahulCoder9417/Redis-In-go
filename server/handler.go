@@ -3,6 +3,7 @@ package server
 import (
 	"strconv"
 	"strings"
+	"time"
 )
 
 func HandleCommand(message string) string {
@@ -42,11 +43,25 @@ func HandleCommand(message string) string {
 
 		key := parts[1]
 		value := parts[2]
-		
+		var expiry time.time
+
+if len(parts)>=5{
+			if strings.ToUpper(parts[3]) == "EX" {
+				seconds,err := strconv.Atoi(parts[4])
+				if err != nil {
+					return "-ERR invalid expire time\r\n"
+				}
+
+				expiry = time.Now().Add(time.Duration(seconds) * time.Second)
+			}
+		}
+
 
 		Mu.Lock()
 		defer Mu.Unlock()
-		Store[key] = Value{Data: value}
+
+		
+		Store[key] = Value{Data: value, ExpiresAt: expiry}
 
 		return "+OK\r\n"
 

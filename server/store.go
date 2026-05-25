@@ -1,9 +1,13 @@
 package server
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type Value struct{
 	Data string
+	ExpiresAt time.Time
 }
 
 
