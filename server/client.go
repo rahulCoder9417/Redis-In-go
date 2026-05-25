@@ -4,27 +4,25 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"strings"
 )
 
 func HandleClient(conn net.Conn) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
+	resp:=NewResp(reader)
 
 	for {
 
-		message, err := reader.ReadString('\n')
+		command, err := resp.Read()
 		if err != nil {
 			fmt.Println("Client disconnected:", conn.RemoteAddr())
 			return
 		}
 
-		message = strings.TrimSpace(message)
+		fmt.Printf("[%s] %s\n", conn.RemoteAddr(), command)
 
-		fmt.Printf("[%s] %s\n", conn.RemoteAddr(), message)
-
-		response := HandleCommand(message)
+		response := HandleCommand(command)
 
 		conn.Write([]byte(response))
 	}

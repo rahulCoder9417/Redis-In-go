@@ -6,9 +6,7 @@ import (
 	"time"
 )
 
-func HandleCommand(message string) string {
-
-	parts := strings.Split(message, " ")
+func HandleCommand(parts []string) string {
 
 	if len(parts) == 0 {
 		return "-ERR empty command\r\n"
