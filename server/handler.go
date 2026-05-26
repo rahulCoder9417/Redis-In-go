@@ -59,7 +59,7 @@ if len(parts)>=5{
 		defer Mu.Unlock()
 
 		
-		Store[key] = Value{Data: value, ExpiresAt: expiry}
+		Store[key] = Value{Type: "string",String: value, ExpiresAt: expiry}
 
 		return "+OK\r\n"
 
@@ -76,6 +76,10 @@ if len(parts)>=5{
 		if !exists {
 			return "$-1\r\n"
 		}
+
+		if value.Type != "string" {
+			return "-ERR value is not a string\r\n"
+		}
 		
 		if !value.ExpiresAt.IsZero() && value.ExpiresAt.Before(time.Now()) {
 			Mu.Lock()
@@ -85,9 +89,9 @@ if len(parts)>=5{
 		}
 
 		return "$" +
-			strconv.Itoa(len(value.Data)) +
+			strconv.Itoa(len(value.String)) +
 			"\r\n" +
-			value.Data +
+			value.String +
 			"\r\n"
 	default:
 		return "-ERR unknown command\r\n"

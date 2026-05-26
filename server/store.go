@@ -6,13 +6,16 @@ import (
 )
 
 type Value struct{
-	Data string
+	Type string
+
+	String string
+	List []string
+
 	ExpiresAt time.Time
 }
 
 
 var(
-
-Store = map[string]Value{}
-Mu sync.RWMutex
+	Store = map[string]Value{}
+	Mu sync.RWMutex
 )
