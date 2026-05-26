@@ -43,7 +43,7 @@ func HandleCommand(parts []string) string {
 		value := parts[2]
 		var expiry time.Time
 
-if len(parts)>=5{
+		if len(parts)>=5{
 			if strings.ToUpper(parts[3]) == "EX" {
 				seconds,err := strconv.Atoi(parts[4])
 				if err != nil {
@@ -93,6 +93,69 @@ if len(parts)>=5{
 			"\r\n" +
 			value.String +
 			"\r\n"
+	
+	
+	case "RPUSH":
+		if len(parts)<3{
+			return "-ERR wrong number of arguments for 'RPUSH'\r\n"
+		}
+		
+		key := parts[1]
+		values:= parts[2:]
+
+
+		Mu.Lock()
+		defer Mu.Unlock()
+		
+		v,exists := Store[key]
+		
+		if !exists{
+			v=Value{
+				Type:"list",
+				List: []string{},
+			}
+		}
+		
+		if v.Type != "list"{
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
+
+		v.List = append(v.List, values...)
+		Store[key] = v
+		
+		return RespInteger(len(v.List))
+
+	case "LPUSH":
+		if len(parts)<3{
+			return "-ERR wrong number of arguments for 'LPUSH'\r\n"
+		}
+
+		key := parts[1]
+		values:=parts[2:]
+
+		Mu.Lock()
+		defer Mu.Unlock()
+
+		v,exists :=Store[key]
+
+		if !exists{
+			v = Value{
+				Type:"list",
+				List: []string{},
+			}
+		}
+		
+		if v.Type != "list"{
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
+
+		for _,value:=range values{
+			v.List = append([]string{value}, v.List...)
+		}
+
+		Store[key] = v
+		
+		return RespInteger(len(v.List))
 	default:
 		return "-ERR unknown command\r\n"
 	}
