@@ -175,6 +175,45 @@ func HandleCommand(parts []string) string {
 		}
 		
 		return RespInteger(len(value.List))
+
+	case "LINDEX":
+		if len(parts)<3{
+			return "-ERR wrong number of arguments for 'LINDEX'\r\n"
+		}
+		
+		key := parts[1]
+		index,err := strconv.Atoi(parts[2])
+		if err != nil {
+			return "-ERR index out of range\r\n"
+		}
+		
+		Mu.RLock()
+		value, exists := Store[key]
+		Mu.RUnlock()
+		if !exists {
+			return "$-1\r\n"
+		}
+		
+		if value.Type != "list"{
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
+
+
+		if index < 0 {
+			index = len(value.List) + index
+		}
+		
+		if index < 0 || index >= len(value.List) {
+			return "$-1\r\n"
+		}
+		
+		v: =value.List[index]
+
+		return "$" +
+		strconv.Itoa(len(v)) +
+		"\r\n" +
+		value +
+		"\r\n"
 	default:
 		return "-ERR unknown command\r\n"
 	}
