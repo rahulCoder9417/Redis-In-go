@@ -207,13 +207,96 @@ func HandleCommand(parts []string) string {
 			return "$-1\r\n"
 		}
 		
-		v: =value.List[index]
+		v :=value.List[index]
 
 		return "$" +
 		strconv.Itoa(len(v)) +
 		"\r\n" +
-		value +
+		v +
 		"\r\n"
+
+
+   case "LPOP":
+
+	if len(parts) < 2 {
+		return "-ERR wrong number of arguments for 'LPOP'\r\n"
+	}
+
+	key := parts[1]
+
+	Mu.Lock()
+	defer Mu.Unlock()
+
+	v, exists := Store[key]
+
+	if !exists {
+		return "$-1\r\n"
+	}
+
+	if v.Type != "list" {
+		return "-WRONGTYPE Operation against wrong kind of value\r\n"
+	}
+
+	if len(v.List) == 0 {
+		return "$-1\r\n"
+	}
+
+	item := v.List[0]
+
+	v.List = v.List[1:]
+
+	if len(v.List) == 0 {
+		delete(Store, key)
+	} else {
+		Store[key] = v
+	}
+
+	return "$" +
+		strconv.Itoa(len(item)) +
+		"\r\n" +
+		item +
+		"\r\n"
+
+	case "RPOP":
+		if len(parts) < 2 {
+			return "-ERR wrong number of arguments for 'RPOP'\r\n"
+		}
+
+		key := parts[1]
+
+		Mu.Lock()
+		defer Mu.Unlock()
+
+		v, exists := Store[key]
+
+		if !exists {
+			return "$-1\r\n"
+		}
+
+		if v.Type != "list" {
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
+
+		if len(v.List) == 0 {
+			return "$-1\r\n"
+		}
+
+		last := v.List[len(v.List)-1]
+
+		v.List = v.List[:len(v.List)-1]
+
+		if len(v.List) == 0 {
+			delete(Store, key)
+		} else {
+			Store[key] = v
+		}
+
+		return "$" +
+			strconv.Itoa(len(last)) +
+			"\r\n" +
+			last +
+			"\r\n"		
+			
 	default:
 		return "-ERR unknown command\r\n"
 	}
