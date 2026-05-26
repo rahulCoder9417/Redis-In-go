@@ -156,6 +156,25 @@ func HandleCommand(parts []string) string {
 		Store[key] = v
 		
 		return RespInteger(len(v.List))
+
+	case "LLEN":
+		if len(parts)<2{
+			return "-ERR wrong number of arguments for 'LLEN'\r\n"
+		}
+		
+		key := parts[1]
+		Mu.RLock()
+		value, exists := Store[key]
+		Mu.RUnlock()
+		if !exists {
+			return RespInteger(0)
+		}
+		
+		if value.Type != "list"{
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
+		
+		return RespInteger(len(value.List))
 	default:
 		return "-ERR unknown command\r\n"
 	}
