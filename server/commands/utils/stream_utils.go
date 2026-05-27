@@ -77,3 +77,29 @@ func GenerateStreamID(lastID string) string {
 	// clock moved backwards
 	return strconv.Itoa(lastMs) + "-" + strconv.Itoa(lastSeq+1)
 }
+
+func GeneratePartialId(msPart ,lastId string)(string,bool){
+	ms,err := strconv.Atoi(msPart)
+	if err != nil {
+		return "",false
+	}
+
+	if lastId ==""{
+		return strconv.Itoa(ms) + "-0",true
+	}
+	
+	lastMs, lastSeq, ok := ParseStreamID(lastId)
+	if !ok {
+		return strconv.Itoa(ms) + "-0",true
+	}
+	
+	if ms < lastMs {
+		return "",false
+	}
+
+	if ms == lastMs {
+		return strconv.Itoa(ms) + "-" + strconv.Itoa(lastSeq+1),true
+	}
+	
+	return strconv.Itoa(ms) + "-0",true
+}
