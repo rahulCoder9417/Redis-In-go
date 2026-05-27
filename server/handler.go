@@ -41,6 +41,8 @@ func HandleCommand(parts []string) string {
 		return commands.RPop(parts)
 	case "TYPE":
 		return commands.Type(parts)
+	case "XADD":
+		return commands.XAdd(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
