@@ -10,15 +10,17 @@ func XAdd(parts []string) string {
 	if (len(parts)-3)%2 != 0{
 		return RespError("field/value pairs must be specified")
 	}
-	
-	_,_,ok := utils.ParseStreamID(parts[2])
+	id:=parts[2]
 
-	if !ok {
-		return RespError("invalid stream entry ID")
+	if(id != "*"){
+		_,_,ok := utils.ParseStreamID(id)
+
+		if !ok {
+			return RespError("invalid stream entry ID")
+		}
 	}
 
 	key := parts[1]
-	id := parts[2]
 
 	fields := make(map[string]string)
 	
@@ -41,10 +43,16 @@ func XAdd(parts []string) string {
 	if v.Type != "stream" {
 		return RespError("WRONGTYPE Operation against a key holding the wrong kind of value")
 	}
-	
-	if len(v.Stream)>0{
-		lastId := v.Stream[len(v.Stream)-1].ID
-		if utils.CompareIDs(id, lastId) <= 0 {
+	lastID := ""
+
+	if len(v.Stream) > 0 {
+		lastID = v.Stream[len(v.Stream)-1].ID
+	}
+
+	if id == "*" {
+		id = utils.GenerateStreamID(lastID)
+	} else {
+		if lastID != "" && utils.CompareIDs(id, lastID) <= 0 {
 			return RespError("ID must be greater than previous ID")
 		}
 	}

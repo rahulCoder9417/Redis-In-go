@@ -3,6 +3,7 @@ package utils
 import (
 	"strconv"
 	"strings"
+	"time"
 )
 
 func ParseStreamID(id string) (int, int, bool) {
@@ -48,4 +49,31 @@ func CompareIDs(a,b string)int{
 	}
 	
 	return 0
+}
+func GenerateStreamID(lastID string) string {
+
+	currentMs := int(time.Now().UnixMilli())
+
+	if lastID == "" {
+		return strconv.Itoa(currentMs) + "-0"
+	}
+
+	lastMs, lastSeq, ok := ParseStreamID(lastID)
+
+	if !ok {
+		return strconv.Itoa(currentMs) + "-0"
+	}
+
+	// same millisecond
+	if currentMs == lastMs {
+		return strconv.Itoa(currentMs) + "-" + strconv.Itoa(lastSeq+1)
+	}
+
+	// newer millisecond
+	if currentMs > lastMs {
+		return strconv.Itoa(currentMs) + "-0"
+	}
+
+	// clock moved backwards
+	return strconv.Itoa(lastMs) + "-" + strconv.Itoa(lastSeq+1)
 }
