@@ -120,11 +120,81 @@ func HandleCommand(parts []string) string {
 			return "-WRONGTYPE Operation against wrong kind of value\r\n"
 		}
 
-		v.List = append(v.List, values...)
+		for _, value := range values {
+
+			waiters := ListWaiters[key]
+
+			if len(waiters) > 0 {
+
+				waiter := waiters[0]
+
+				ListWaiters[key] = waiters[1:]
+
+				waiter <- value
+
+			} else {
+
+				v.List = append(v.List, value)
+			}
+		}
+
 		Store[key] = v
 		
 		return RespInteger(len(v.List))
+	case "BLPOP":
 
+		if len(parts) < 3 {
+			return "-ERR wrong number of arguments for 'BLPOP'\r\n"
+		}
+
+		key := parts[1]
+
+		Mu.Lock()
+
+		v, exists := Store[key]
+
+		if exists {
+
+			if v.Type != "list" {
+				Mu.Unlock()
+				return "-WRONGTYPE Operation against wrong kind of value\r\n"
+			}
+
+			if len(v.List) > 0 {
+
+				item := v.List[0]
+
+				v.List = v.List[1:]
+
+				if len(v.List) == 0 {
+					delete(Store, key)
+				} else {
+					Store[key] = v
+				}
+
+				Mu.Unlock()
+
+				return "$" +
+					strconv.Itoa(len(item)) +
+					"\r\n" +
+					item +
+					"\r\n"
+			}
+		}
+
+		ch := make(chan string)
+
+		ListWaiters[key] = append(ListWaiters[key], ch)
+
+		Mu.Unlock()
+
+		item := <-ch
+
+		return "$" +
+			strconv.Itoa(len(item)) +
+			"\r\n" +
+			item +
+			"\r\n"
 	case "LPUSH":
 		if len(parts)<3{
 			return "-ERR wrong number of arguments for 'LPUSH'\r\n"
@@ -216,46 +286,46 @@ func HandleCommand(parts []string) string {
 		"\r\n"
 
 
-   case "LPOP":
+   	case "LPOP":
 
-	if len(parts) < 2 {
-		return "-ERR wrong number of arguments for 'LPOP'\r\n"
-	}
+		if len(parts) < 2 {
+			return "-ERR wrong number of arguments for 'LPOP'\r\n"
+		}
 
-	key := parts[1]
+		key := parts[1]
 
-	Mu.Lock()
-	defer Mu.Unlock()
+		Mu.Lock()
+		defer Mu.Unlock()
 
-	v, exists := Store[key]
+		v, exists := Store[key]
 
-	if !exists {
-		return "$-1\r\n"
-	}
+		if !exists {
+			return "$-1\r\n"
+		}
 
-	if v.Type != "list" {
-		return "-WRONGTYPE Operation against wrong kind of value\r\n"
-	}
+		if v.Type != "list" {
+			return "-WRONGTYPE Operation against wrong kind of value\r\n"
+		}
 
-	if len(v.List) == 0 {
-		return "$-1\r\n"
-	}
+		if len(v.List) == 0 {
+			return "$-1\r\n"
+		}
 
-	item := v.List[0]
+		item := v.List[0]
 
-	v.List = v.List[1:]
+		v.List = v.List[1:]
 
-	if len(v.List) == 0 {
-		delete(Store, key)
-	} else {
-		Store[key] = v
-	}
+		if len(v.List) == 0 {
+			delete(Store, key)
+		} else {
+			Store[key] = v
+		}
 
-	return "$" +
-		strconv.Itoa(len(item)) +
-		"\r\n" +
-		item +
-		"\r\n"
+		return "$" +
+			strconv.Itoa(len(item)) +
+			"\r\n" +
+			item +
+			"\r\n"
 
 	case "RPOP":
 		if len(parts) < 2 {

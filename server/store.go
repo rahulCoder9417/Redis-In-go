@@ -18,4 +18,5 @@ type Value struct{
 var(
 	Store = map[string]Value{}
 	Mu sync.RWMutex
+	ListWaiters = map[string][]chan string{}
 )
