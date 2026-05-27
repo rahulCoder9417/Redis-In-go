@@ -39,6 +39,8 @@ func HandleCommand(parts []string) string {
 		return commands.LPop(parts)
 	case "RPOP":
 		return commands.RPop(parts)
+	case "TYPE":
+		return commands.Type(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
