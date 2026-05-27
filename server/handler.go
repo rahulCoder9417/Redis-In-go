@@ -17,7 +17,6 @@ func HandleCommand(parts []string) string {
 	switch command {
 	case "PING":
 		return commands.Ping(parts)
-
 	case "LRANGE":
 		return commands.LRange(parts)
 	case "ECHO":

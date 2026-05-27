@@ -267,3 +267,49 @@ func RPop(parts []string) string {
 
 	return RespBulkString(last)
 }
+
+
+func LRange(parts []string) string {
+	if len(parts) != 4 {
+		return RespError("wrong number of arguments passed pass 4 arguments")
+	}
+	
+	key := parts[1]
+	start,err1 := strconv.Atoi(parts[2])
+	end,err2 := strconv.Atoi(parts[3])
+	if err1 != nil || err2 != nil {
+		return RespError("Pass Number as argument")
+	}
+	
+	
+	Mu.RLock()
+	value, exists := Store[key]
+	Mu.RUnlock()
+	
+	if !exists {
+		return RespNull()
+	}
+	
+	if value.Type != "list" {
+		return RespError("WRONGTYPE Operation against wrong kind of value")
+	}
+	
+	length := len(value.List)
+	if(end <0) {
+		end = length + end
+	}
+	
+	if start < 0 {
+		start = length + start
+	}
+	
+	if end > length {
+		end = length - 1
+	}
+	if start > end || start >= length {
+		return RespArray([]string{})
+	}
+	
+	return RespArray(value.List[start:end+1])
+}
+

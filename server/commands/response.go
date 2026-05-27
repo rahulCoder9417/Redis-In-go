@@ -1,6 +1,8 @@
 package commands
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func RespSimpleString(s string) string {
 	return "+" + s + "\r\n"
@@ -24,4 +26,15 @@ func RespNull() string {
 
 func RespInteger(n int) string {
 	return ":" + strconv.Itoa(n) + "\r\n"
+}
+
+func RespArray(arr []string) string {
+
+	resp := "*" + strconv.Itoa(len(arr)) + "\r\n"
+
+	for _, item := range arr {
+		resp += RespBulkString(item)
+	}
+
+	return resp
 }
