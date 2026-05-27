@@ -5,11 +5,17 @@ import (
 	"time"
 )
 
+type StreamEntry struct{
+	ID string
+	Fields map[string]string
+}
+
 type Value struct {
 	Type string
 
 	String string
 	List   []string
+	Stream []StreamEntry
 
 	ExpiresAt time.Time
 }
