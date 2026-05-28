@@ -7,12 +7,12 @@ import (
 
 func Start() {
 
-	ln, err := net.Listen("tcp", ":6380")
+	ln, err := net.Listen("tcp", ":6379")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Redis server started on port 6380")
+	fmt.Println("Redis server started on port 6379")
 
 	for {
 		conn, err := ln.Accept()

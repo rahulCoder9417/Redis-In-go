@@ -1,8 +1,9 @@
 package commands
 
 import (
+	"strconv"
 	"strings"
-	"redis-from-scratch/server/commands/utils"
+	"github.com/rahulCoder9417/Redis-in-go/server/commands/utils"
 )
 
 func XAdd(parts []string) string {
@@ -56,7 +57,7 @@ func XAdd(parts []string) string {
 
 		msPart := strings.TrimSuffix(id, "-*")
 
-		generatedID, ok := utils.GeneratePartialID(msPart, lastID)
+		generatedID, ok := utils.GeneratePartialId(msPart, lastID)
 
 		if !ok {
 			return RespError("ID must be greater than previous ID")
@@ -88,4 +89,61 @@ func XAdd(parts []string) string {
 	Store[key] = v
 
 	return RespBulkString(id)
+}
+
+func XRange(parts []string) string {
+	if len(parts) != 4 {
+		return RespError("wrong number of arguments for 'XRANGE'")
+	}
+	
+	key := parts[1]
+	start := parts[2]
+	end := parts[3]
+	Mu.RLock()
+	value,exists:=Store[key]
+	Mu.RUnlock()
+
+	if !exists{
+		return RespArray([]string{})
+	}
+
+	if value.Type != "stream" {
+		return RespError("WRONGTYPE Operation against a key holding the wrong kind of value")
+	}
+
+	result :=""
+	count :=0
+
+	if(start == "-"){
+		start = "0-0"
+	}
+	if(end == "+"){
+		end = "9999999999999-999999999"
+	}
+
+	for _,entry :=range value.Stream{
+		if utils.CompareIDs(entry.ID, start) >= 0 && 
+			utils.CompareIDs(entry.ID, end) <= 0 {
+			
+			fieldResp := ""
+			fieldCount := 0
+
+			for field,value := range entry.Fields{
+				fieldResp += RespBulkString(field) + RespBulkString(value)
+				fieldCount += 2
+			}
+
+			entryResp := "*2\r\n"
+
+			entryResp+=RespBulkString(entry.ID) 
+
+			entryResp += "*" + strconv.Itoa(fieldCount) + "\r\n"
+			entryResp += fieldResp
+
+			result += entryResp
+			count++
+		}
+	}
+	
+	return "*" + strconv.Itoa(count) + "\r\n" + result
 }
