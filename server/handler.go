@@ -2,11 +2,11 @@ package server
 
 import (
 	"strings"
-
+	"github.com/rahulCoder9417/Redis-in-go/server/types"
 	"github.com/rahulCoder9417/Redis-in-go/server/commands"
 )
 
-func HandleCommand(parts []string, client *Client) string {
+func HandleCommand(parts []string, client *types.Client) string {
 
 	if len(parts) == 0 {
 		return commands.RespError("empty command")
@@ -49,6 +49,8 @@ func HandleCommand(parts []string, client *Client) string {
 		return commands.XRange(parts)
 	case "XREAD":
 		return commands.XRead(parts)
+	case "MULTI":
+		return commands.Multi(client)
 	default:
 		return commands.RespError("unknown command")
 	}

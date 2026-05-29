@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"github.com/rahulCoder9417/Redis-in-go/server/types"
 )
 
 func HandleClient(conn net.Conn) {
 	defer conn.Close()
 
-	client := &Client{
+	client := &types.Client{
 		Conn: conn,
 	}
 
