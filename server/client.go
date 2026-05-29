@@ -8,7 +8,10 @@ import (
 )
 
 func HandleClient(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		client.WatchedKeys = nil
+		conn.Close()
+	}()
 
 	client := &types.Client{
 		Conn: conn,

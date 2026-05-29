@@ -88,6 +88,7 @@ func Exec(
 			)
 	}
 
+	client.WatchedKeys = nil
 	return RespRawArray(
 		responses,
 	)
@@ -101,6 +102,7 @@ func Discard(client *types.Client) string {
 	
 	client.InTransaction = false
 	client.QueuedCommands = nil
+	client.WatchedKeys = nil
 	return RespSimpleString("OK")
 }
 
