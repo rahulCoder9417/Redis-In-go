@@ -45,6 +45,8 @@ func HandleCommand(parts []string) string {
 		return commands.XAdd(parts)
 	case "XRANGE":
 		return commands.XRange(parts)
+	case "XREAD":
+		return commands.XRead(parts)
 	default:
 		return commands.RespError("unknown command")
 	}

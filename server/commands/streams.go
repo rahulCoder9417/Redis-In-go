@@ -147,3 +147,75 @@ func XRange(parts []string) string {
 	
 	return "*" + strconv.Itoa(count) + "\r\n" + result
 }
+
+func XRead(parts []string) string {
+
+	if len(parts) != 4 {
+		return RespError("wrong number of arguments for 'XREAD'")
+	}
+
+	if strings.ToUpper(parts[1]) != "STREAMS" {
+		return RespError("syntax error")
+	}
+
+	key := parts[2]
+	lastID := parts[3]
+
+	Mu.RLock()
+	value, exists := Store[key]
+	Mu.RUnlock()
+
+	if !exists {
+		return RespNull()
+	}
+
+	if value.Type != "stream" {
+		return RespError("WRONGTYPE Operation against wrong kind of value")
+	}
+
+	entriesResp := ""
+	entryCount := 0
+
+	for _, entry := range value.Stream {
+
+		if utils.CompareIDs(entry.ID, lastID) <= 0 {
+			continue
+		}
+
+		fieldResp := ""
+		fieldCount := 0
+
+		for field, value := range entry.Fields {
+
+			fieldResp += RespBulkString(field)
+			fieldResp += RespBulkString(value)
+
+			fieldCount += 2
+		}
+
+		entryResp := "*2\r\n"
+
+		entryResp += RespBulkString(entry.ID)
+
+		entryResp += "*" + strconv.Itoa(fieldCount) + "\r\n"
+
+		entryResp += fieldResp
+
+		entriesResp += entryResp
+		entryCount++
+	}
+
+	if entryCount == 0 {
+		return RespNull()
+	}
+
+	streamBlock := "*2\r\n"
+
+	streamBlock += RespBulkString(key)
+
+	streamBlock += "*" + strconv.Itoa(entryCount) + "\r\n"
+
+	streamBlock += entriesResp
+
+	return "*1\r\n" + streamBlock
+}
