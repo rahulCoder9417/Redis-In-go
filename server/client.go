@@ -8,15 +8,15 @@ import (
 )
 
 func HandleClient(conn net.Conn) {
-	defer func() {
-		client.WatchedKeys = nil
-		conn.Close()
-	}()
+	
 
 	client := &types.Client{
 		Conn: conn,
 	}
-
+	defer func() {
+		client.WatchedKeys = nil
+		conn.Close()
+	}()
 	reader := bufio.NewReader(conn)
 	resp:=NewResp(reader)
 
