@@ -25,6 +25,8 @@ func HandleCommand(parts []string, client *Client) string {
 		return commands.Set(parts)
 	case "GET":
 		return commands.Get(parts)
+	case "INCR":
+		return commands.Incr(parts)
 	case "RPUSH":
 		return commands.RPush(parts)
 	case "LPUSH":
