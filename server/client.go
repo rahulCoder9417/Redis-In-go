@@ -9,6 +9,10 @@ import (
 func HandleClient(conn net.Conn) {
 	defer conn.Close()
 
+	client := &Client{
+		Conn: conn,
+	}
+
 	reader := bufio.NewReader(conn)
 	resp:=NewResp(reader)
 
@@ -22,7 +26,10 @@ func HandleClient(conn net.Conn) {
 
 		fmt.Printf("[%s] %s\n", conn.RemoteAddr(), command)
 
-		response := HandleCommand(command)
+		response := HandleCommand(
+			command,
+			client,
+		)
 
 		conn.Write([]byte(response))
 	}

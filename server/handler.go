@@ -6,7 +6,7 @@ import (
 	"github.com/rahulCoder9417/Redis-in-go/server/commands"
 )
 
-func HandleCommand(parts []string) string {
+func HandleCommand(parts []string, client *Client) string {
 
 	if len(parts) == 0 {
 		return commands.RespError("empty command")
