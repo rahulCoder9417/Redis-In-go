@@ -78,12 +78,7 @@ func Get(parts []string) string {
 	return RespBulkString(value.String)
 }
 
-package commands
 
-import (
-	"strconv"
-	"time"
-)
 
 func Incr(parts []string) string {
 

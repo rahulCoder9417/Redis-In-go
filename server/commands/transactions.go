@@ -101,12 +101,18 @@ func Watch(
 	Mu.RLock()
 	defer Mu.RUnlock()
 	for _, key := range parts[1:] {
-		version :=
-			KeyVersions[key]
+		version := KeyVersions[key]
 
-		client.WatchedKeys[key] =
-			version
+		client.WatchedKeys[key] =version
 	}
 	
+	return RespSimpleString("OK")
+}
+
+
+func UnWatch(client *types.Client) string {
+	
+	
+	client.WatchedKeys = nil
 	return RespSimpleString("OK")
 }
