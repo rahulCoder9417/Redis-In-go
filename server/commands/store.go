@@ -21,9 +21,10 @@ type Value struct {
 }
 
 var (
-	Store       = map[string]Value{}
-	Mu          sync.RWMutex
-	ListWaiters = map[string][]chan string{}
+	Store         = map[string]Value{}
+	Mu            sync.RWMutex
+	ListWaiters   = map[string][]chan string{}
+	StreamWaiters = map[string][]chan StreamEntry{}
 )
 
 func RemoveWaiter(key string, target chan string) {
@@ -33,6 +34,22 @@ func RemoveWaiter(key string, target chan string) {
 	for i, waiter := range waiters {
 		if waiter == target {
 			ListWaiters[key] = append(waiters[:i], waiters[i+1:]...)
+			break
+		}
+	}
+}
+
+
+func RemoveStreamWaiter(
+	key string,
+	target chan StreamEntry,
+) {
+	Mu.Lock()
+	defer Mu.Unlock()
+	waiters := StreamWaiters[key]
+	for i, waiter := range waiters {
+		if waiter == target {
+			StreamWaiters[key] = append(waiters[:i], waiters[i+1:]...)
 			break
 		}
 	}
