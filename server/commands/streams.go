@@ -150,7 +150,7 @@ func XRange(parts []string) string {
 
 func XRead(parts []string) string {
 
-	if len(parts) != 4 {
+	if len(parts) < 4 {
 		return RespError("wrong number of arguments for 'XREAD'")
 	}
 
@@ -158,64 +158,97 @@ func XRead(parts []string) string {
 		return RespError("syntax error")
 	}
 
-	key := parts[2]
-	lastID := parts[3]
+	remaining := parts[2:]
 
-	Mu.RLock()
-	value, exists := Store[key]
-	Mu.RUnlock()
-
-	if !exists {
-		return RespNull()
+	if len(remaining)%2 != 0 {
+		return RespError("unbalanced stream keys and IDs")
 	}
 
-	if value.Type != "stream" {
-		return RespError("WRONGTYPE Operation against wrong kind of value")
-	}
+	streamCount := len(remaining) / 2
 
-	entriesResp := ""
-	entryCount := 0
+	streamNames := remaining[:streamCount]
+	streamIDs := remaining[streamCount:]
 
-	for _, entry := range value.Stream {
+	response := ""
+	matchedStreams := 0
 
-		if utils.CompareIDs(entry.ID, lastID) <= 0 {
+	for i := 0; i < streamCount; i++ {
+
+		key := streamNames[i]
+		lastID := streamIDs[i]
+
+		Mu.RLock()
+		value, exists := Store[key]
+		Mu.RUnlock()
+
+		if !exists {
 			continue
 		}
 
-		fieldResp := ""
-		fieldCount := 0
-
-		for field, value := range entry.Fields {
-
-			fieldResp += RespBulkString(field)
-			fieldResp += RespBulkString(value)
-
-			fieldCount += 2
+		if value.Type != "stream" {
+			return RespError(
+				"WRONGTYPE Operation against wrong kind of value",
+			)
 		}
 
-		entryResp := "*2\r\n"
+		entriesResp := ""
+		entryCount := 0
 
-		entryResp += RespBulkString(entry.ID)
+		for _, entry := range value.Stream {
 
-		entryResp += "*" + strconv.Itoa(fieldCount) + "\r\n"
+			if CompareIDs(entry.ID, lastID) <= 0 {
+				continue
+			}
 
-		entryResp += fieldResp
+			fieldResp := ""
+			fieldCount := 0
 
-		entriesResp += entryResp
-		entryCount++
+			for field, fieldValue := range entry.Fields {
+
+				fieldResp += RespBulkString(field)
+				fieldResp += RespBulkString(fieldValue)
+
+				fieldCount += 2
+			}
+
+			entryResp := "*2\r\n"
+
+			entryResp += RespBulkString(entry.ID)
+
+			entryResp += "*" +
+				strconv.Itoa(fieldCount) +
+				"\r\n"
+
+			entryResp += fieldResp
+
+			entriesResp += entryResp
+			entryCount++
+		}
+
+		if entryCount == 0 {
+			continue
+		}
+
+		streamResp := "*2\r\n"
+
+		streamResp += RespBulkString(key)
+
+		streamResp += "*" +
+			strconv.Itoa(entryCount) +
+			"\r\n"
+
+		streamResp += entriesResp
+
+		response += streamResp
+		matchedStreams++
 	}
 
-	if entryCount == 0 {
+	if matchedStreams == 0 {
 		return RespNull()
 	}
 
-	streamBlock := "*2\r\n"
-
-	streamBlock += RespBulkString(key)
-
-	streamBlock += "*" + strconv.Itoa(entryCount) + "\r\n"
-
-	streamBlock += entriesResp
-
-	return "*1\r\n" + streamBlock
+	return "*" +
+		strconv.Itoa(matchedStreams) +
+		"\r\n" +
+		response
 }
