@@ -100,7 +100,7 @@ func XAdd(parts []string) string {
 	v.Stream = append(v.Stream, entry)
 
 	Store[key] = v
-
+	IncrementKeyVersion(key)
 	return RespBulkString(id)
 }
 

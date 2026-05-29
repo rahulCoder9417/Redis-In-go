@@ -101,6 +101,11 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 			client,
 			ExecuteImmediate,
 		)
+	case "WATCH":
+		return commands.Watch(
+			client,
+			parts,
+		)
 	default:
 		return commands.RespError("unknown command")
 	}
@@ -131,7 +136,8 @@ func IsValidCommand(
 		"DISCARD",
 		"XADD",
 		"XRANGE",
-		"XREAD":
+		"XREAD",
+		"WATCH":
 
 		return true
 	}

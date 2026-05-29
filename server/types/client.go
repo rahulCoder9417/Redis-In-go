@@ -6,4 +6,5 @@ type Client struct {
 	InTransaction bool
 	QueuedCommands [][]string
 	HasTransactionError bool
+	WatchedKeys map[string]int64
 }

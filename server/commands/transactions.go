@@ -84,3 +84,29 @@ func Discard(client *types.Client) string {
 	client.QueuedCommands = nil
 	return RespSimpleString("OK")
 }
+
+
+func Watch(
+	client *types.Client,
+	parts []string,
+) string {
+	if len(parts)<2{
+		return RespError("wrong number of arguments for 'WATCH' command")
+	}
+	
+	if client.WatchedKeys == nil {
+		client.WatchedKeys = make(map[string]int64)
+	}
+	
+	Mu.RLock()
+	defer Mu.RUnlock()
+	for _, key := range parts[1:] {
+		version :=
+			KeyVersions[key]
+
+		client.WatchedKeys[key] =
+			version
+	}
+	
+	return RespSimpleString("OK")
+}

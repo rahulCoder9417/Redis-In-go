@@ -41,7 +41,7 @@ func RPush(parts []string) string {
 	}
 
 	Store[key] = v
-
+	IncrementKeyVersion(key)
 	return RespInteger(len(v.List))
 }
 
@@ -81,7 +81,7 @@ func LPush(parts []string) string {
 	}
 
 	Store[key] = v
-
+	IncrementKeyVersion(key)
 	return RespInteger(len(v.List))
 }
 
@@ -115,6 +115,7 @@ func BLPop(parts []string) string {
 				delete(Store, key)
 			} else {
 				Store[key] = v
+				IncrementKeyVersion(key)
 			}
 
 			Mu.Unlock()
@@ -227,6 +228,7 @@ func LPop(parts []string) string {
 		delete(Store, key)
 	} else {
 		Store[key] = v
+		IncrementKeyVersion(key)
 	}
 
 	return RespBulkString(item)
@@ -263,6 +265,7 @@ func RPop(parts []string) string {
 		delete(Store, key)
 	} else {
 		Store[key] = v
+		IncrementKeyVersion(key)
 	}
 
 	return RespBulkString(last)

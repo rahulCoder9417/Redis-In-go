@@ -22,6 +22,7 @@ type Value struct {
 
 var (
 	Store         = map[string]Value{}
+	keyVersions   = map[string]int64{}
 	Mu            sync.RWMutex
 	ListWaiters   = map[string][]chan string{}
 	StreamWaiters = map[string][]chan StreamEntry{}
@@ -53,4 +54,10 @@ func RemoveStreamWaiter(
 			break
 		}
 	}
+}
+
+func IncrKeyVersion(key string) {
+	Mu.Lock()
+	defer Mu.Unlock()
+	keyVersions[key]++
 }
