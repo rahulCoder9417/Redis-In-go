@@ -30,6 +30,15 @@ func HandleCommand(parts []string, client *types.Client) string {
 
 		default:
 
+			if !IsValidCommand(command) {
+
+				client.HasTransactionError = true
+
+				return commands.RespError(
+					"unknown command",
+				)
+			}
+
 			client.QueuedCommands =
 				append(
 					client.QueuedCommands,
@@ -37,7 +46,7 @@ func HandleCommand(parts []string, client *types.Client) string {
 				)
 
 			return commands.RespSimpleString(
-				"QUEUED",
+					"QUEUED",
 			)
 		}
 	}
@@ -95,4 +104,37 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 	default:
 		return commands.RespError("unknown command")
 	}
+}
+
+func IsValidCommand(
+	command string,
+) bool {
+
+	switch command {
+
+	case "PING",
+		"LRANGE",
+		"ECHO",
+		"SET",
+		"GET",
+		"INCR",
+		"RPUSH",
+		"LPUSH",
+		"BLPOP",
+		"LLEN",
+		"LINDEX",
+		"LPOP",
+		"RPOP",
+		"TYPE",
+		"MULTI",
+		"EXEC",
+		"DISCARD",
+		"XADD",
+		"XRANGE",
+		"XREAD":
+
+		return true
+	}
+
+	return false
 }

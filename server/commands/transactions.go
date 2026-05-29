@@ -10,7 +10,7 @@ func Multi(client *types.Client)string {
 	}
 
 	client.InTransaction = true
-	
+	client.HasTransactionError = false
 	client.QueuedCommands = nil
 	return RespSimpleString("OK")
 }
@@ -30,11 +30,23 @@ func Exec(
 		)
 	}
 
+
+	if client.HasTransactionError {
+
+		client.InTransaction = false
+		client.QueuedCommands = nil
+		client.HasTransactionError = false
+
+		return RespError(
+			"EXECABORT Transaction discarded because of previous errors",
+		)
+	}
+
 	queued := client.QueuedCommands
 
 	client.InTransaction = false
 	client.QueuedCommands = nil
-
+	client.HasTransactionError = false
 	if len(queued) == 0 {
 		return "*0\r\n"
 	}
@@ -63,10 +75,10 @@ func Exec(
 }
 
 func Discard(client *types.Client) string {
-	
 	if !client.InTransaction {
 		return RespError(" DISCARD without MULTI")
 	}
+	client.HasTransactionError = false
 	
 	client.InTransaction = false
 	client.QueuedCommands = nil
