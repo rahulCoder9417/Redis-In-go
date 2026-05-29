@@ -38,3 +38,22 @@ func RespArray(arr []string) string {
 
 	return resp
 }
+
+func RespRawArray(
+	responses []string,
+) string {
+
+	resp :=
+		"*" +
+		strconv.Itoa(
+			len(responses),
+		) +
+		"\r\n"
+
+	for _, r := range responses {
+
+		resp += r
+	}
+
+	return resp
+}

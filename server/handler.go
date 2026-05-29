@@ -19,8 +19,13 @@ func HandleCommand(parts []string, client *types.Client) string {
 		switch command {
 
 		case "EXEC":
+			return commands.Exec(
+				client,
+				ExecuteImmediate,
+			)
 		case "DISCARD":
 		case "MULTI":
+			return commands.RespError("MULTI calls can not be nested")
 
 		default:
 
@@ -36,6 +41,12 @@ func HandleCommand(parts []string, client *types.Client) string {
 		}
 	}
 	
+	return ExecuteImmediate(client, parts)
+}
+
+
+func ExecuteImmediate(client *types.Client, parts []string) string {
+	command := strings.ToUpper(parts[0])
 	switch command {
 	case "PING":
 		return commands.Ping(parts)
@@ -65,14 +76,14 @@ func HandleCommand(parts []string, client *types.Client) string {
 		return commands.RPop(parts)
 	case "TYPE":
 		return commands.Type(parts)
+	case "MULTI":
+		return commands.Multi(client)
 	case "XADD":
 		return commands.XAdd(parts)
 	case "XRANGE":
 		return commands.XRange(parts)
 	case "XREAD":
 		return commands.XRead(parts)
-	case "MULTI":
-		return commands.Multi(client)
 	default:
 		return commands.RespError("unknown command")
 	}
