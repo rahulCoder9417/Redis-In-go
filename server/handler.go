@@ -14,6 +14,28 @@ func HandleCommand(parts []string, client *types.Client) string {
 
 	command := strings.ToUpper(parts[0])
 
+	if client.InTransaction {
+
+		switch command {
+
+		case "EXEC":
+		case "DISCARD":
+		case "MULTI":
+
+		default:
+
+			client.QueuedCommands =
+				append(
+					client.QueuedCommands,
+					parts,
+				)
+
+			return commands.RespSimpleString(
+				"QUEUED",
+			)
+		}
+	}
+	
 	switch command {
 	case "PING":
 		return commands.Ping(parts)
