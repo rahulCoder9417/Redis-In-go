@@ -42,6 +42,25 @@ func Exec(
 		)
 	}
 
+	Mu.RLock()
+
+	for key, oldVersion := range client.WatchedKeys {
+
+		if KeyVersions[key] != oldVersion {
+
+			Mu.RUnlock()
+
+			client.WatchedKeys = nil
+			client.InTransaction = false
+			client.QueuedCommands = nil
+			client.HasTransactionError = false
+
+			return RespNull()
+		}
+	}
+
+	Mu.RUnlock()
+
 	queued := client.QueuedCommands
 
 	client.InTransaction = false
