@@ -24,6 +24,7 @@ func HandleCommand(parts []string, client *types.Client) string {
 				ExecuteImmediate,
 			)
 		case "DISCARD":
+			return commands.Discard(client)
 		case "MULTI":
 			return commands.RespError("MULTI calls can not be nested")
 
@@ -84,6 +85,13 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 		return commands.XRange(parts)
 	case "XREAD":
 		return commands.XRead(parts)
+	case "DISCARD":
+		return commands.Discard(client)
+	case "EXEC":
+		return commands.Exec(
+			client,
+			ExecuteImmediate,
+		)
 	default:
 		return commands.RespError("unknown command")
 	}

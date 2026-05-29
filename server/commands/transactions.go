@@ -6,7 +6,7 @@ import "github.com/rahulCoder9417/Redis-in-go/server/types"
 func Multi(client *types.Client)string {
 
 	if client.InTransaction {
-		return RespError("ERR MULTI calls can not be nested")
+		return RespError(" MULTI calls can not be nested")
 	}
 
 	client.InTransaction = true
@@ -36,7 +36,7 @@ func Exec(
 	client.QueuedCommands = nil
 
 	if len(queued) == 0 {
-		return RespSimpleString("*0")
+		return "*0\r\n"
 	}
 
 
@@ -60,4 +60,15 @@ func Exec(
 	return RespRawArray(
 		responses,
 	)
+}
+
+func Discard(client *types.Client) string {
+	
+	if !client.InTransaction {
+		return RespError(" DISCARD without MULTI")
+	}
+	
+	client.InTransaction = false
+	client.QueuedCommands = nil
+	return RespSimpleString("OK")
 }
