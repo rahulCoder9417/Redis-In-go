@@ -23,7 +23,7 @@ func InitConfig() {
 
 	ServerConfig = Config{
 		Port: "6380",
-
+		
 		IsReplica: false,
 
 		ReplicationID: RandomID(),

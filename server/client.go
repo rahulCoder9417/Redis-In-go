@@ -15,6 +15,7 @@ func HandleClient(conn net.Conn) {
 	}
 	defer func() {
 		client.WatchedKeys = nil
+		RemoveReplica(conn)
 		conn.Close()
 	}()
 	reader := bufio.NewReader(conn)
