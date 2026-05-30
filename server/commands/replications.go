@@ -6,9 +6,7 @@ import (
 )
 
 func ReplConf(parts []string)string{
-	return RespSimpleString(
-	"OK"
-	)
+	return RespSimpleString("OK")
 }
 
 func PSync(parts []string)string{
@@ -17,8 +15,7 @@ func PSync(parts []string)string{
 			"wrong number of arguments for 'PSYNC'",
 		)
 	}
-	reponse:=
-	
+	response:=
 		"+FULLRESYNC "+
 			config.ServerConfig.ReplicationID +
 			" " +

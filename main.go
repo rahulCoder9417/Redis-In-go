@@ -12,11 +12,26 @@ func main() {
 
 	args := os.Args
 
-	if len(args) >= 4 && args[1] == "--replicaof" {
-		config.ServerConfig.IsReplica = true
-		config.ServerConfig.MasterHost = args[2]
-		config.ServerConfig.MasterPort = args[3]
+	for i := 0; i < len(args); i++ {
+
+		if args[i] == "--port" && i+1 < len(args) {
+
+			config.ServerConfig.Port =
+				args[i+1]
+		}
+
+		if args[i] == "--replicaof" && i+2 < len(args) {
+
+			config.ServerConfig.IsReplica = true
+
+			config.ServerConfig.MasterHost =
+				args[i+1]
+
+			config.ServerConfig.MasterPort =
+				args[i+2]
+		}
 	}
+
 
 	server.Start()
 }
