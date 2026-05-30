@@ -7,6 +7,10 @@ import (
 )
 
 func Start() {
+	if config.ServerConfig.IsReplica {
+
+		go ConnectToMaster()
+	}
 
 	ln, err := net.Listen("tcp", ":" + config.ServerConfig.Port)
 	if err != nil {
