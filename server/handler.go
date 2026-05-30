@@ -108,6 +108,8 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 		)
 	case "UNWATCH":
 		return commands.UnWatch(client)
+	case "INFO":
+		return commands.Info(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
@@ -140,7 +142,8 @@ func IsValidCommand(
 		"XRANGE",
 		"XREAD",
 		"WATCH",
-		"UNWATCH":
+		"UNWATCH",
+		"INFO":
 
 		return true
 	}
