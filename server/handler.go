@@ -110,6 +110,11 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 		return commands.UnWatch(client)
 	case "INFO":
 		return commands.Info(parts)
+	case "REPLCONF":
+		return commands.ReplConf(parts)
+
+	case "PSYNC":
+		return commands.PSync(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
@@ -143,8 +148,9 @@ func IsValidCommand(
 		"XREAD",
 		"WATCH",
 		"UNWATCH",
-		"INFO":
-
+		"INFO",
+		"REPLCONF",
+		"PSYNC":
 		return true
 	}
 
