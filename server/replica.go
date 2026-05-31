@@ -167,6 +167,10 @@ func ConnectToMaster() {
 				),
 			)
 
+		SendAck(
+			conn,
+		)
+
 		fmt.Println(
 			"replicated:",
 			command,
@@ -269,4 +273,23 @@ func HandleFullResync(
 		offset
 
 	return nil
+}
+
+func SendAck(
+	conn net.Conn,
+){
+	ack := EncodeRESP(
+		[]string{
+			"REPLCONF",
+			"ACK",
+			strconv.FormatInt(
+				config.ServerConfig.ReplicationOffset,
+				10,
+			),
+		},
+	)
+	
+	conn.Write(
+		[]byte(ack),
+	)
 }

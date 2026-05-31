@@ -115,11 +115,11 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 	case "INFO":
 		response = commands.Info(parts)
 	case "REPLCONF":
-		response = commands.ReplConf(parts)
+		response = commands.ReplConf(client,parts)
 
 	case "PSYNC":
 		response = commands.PSync(client.Conn, parts)
-		AddReplica(client.Conn)
+		types.AddReplica(client.Conn)
 	default:
 		return commands.RespError("unknown command")
 	}
