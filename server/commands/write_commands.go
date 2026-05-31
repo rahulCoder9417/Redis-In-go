@@ -3,7 +3,7 @@ import "strings"
 
 
 func IsWritingCommand(
-	cmd string
+	cmd string,
 )bool{
 	cmd = strings.ToUpper(cmd)
 

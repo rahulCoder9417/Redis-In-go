@@ -4,6 +4,7 @@ import (
 	"strings"
 	"github.com/rahulCoder9417/Redis-in-go/server/types"
 	"github.com/rahulCoder9417/Redis-in-go/server/commands"
+	"github.com/rahulCoder9417/Redis-in-go/server/config"
 )
 
 func HandleCommand(parts []string, client *types.Client) string {
@@ -57,67 +58,82 @@ func HandleCommand(parts []string, client *types.Client) string {
 
 func ExecuteImmediate(client *types.Client, parts []string) string {
 	command := strings.ToUpper(parts[0])
+
+	var response string
+
 	switch command {
 	case "PING":
-		return commands.Ping(parts)
+		response = commands.Ping(parts)
 	case "LRANGE":
-		return commands.LRange(parts)
+		response = commands.LRange(parts)
 	case "ECHO":
-		return commands.Echo(parts)
+		response = commands.Echo(parts)
 	case "SET":
-		return commands.Set(parts)
+		response = commands.Set(parts)
 	case "GET":
-		return commands.Get(parts)
+		response = commands.Get(parts)
 	case "INCR":
-		return commands.Incr(parts)
+		response = commands.Incr(parts)
 	case "RPUSH":
-		return commands.RPush(parts)
+		response = commands.RPush(parts)
 	case "LPUSH":
-		return commands.LPush(parts)
+		response = commands.LPush(parts)
 	case "BLPOP":
-		return commands.BLPop(parts)
+		response = commands.BLPop(parts)
 	case "LLEN":
-		return commands.LLen(parts)
+		response = commands.LLen(parts)
 	case "LINDEX":
-		return commands.LIndex(parts)
+		response = commands.LIndex(parts)
 	case "LPOP":
-		return commands.LPop(parts)
+		response = commands.LPop(parts)
 	case "RPOP":
-		return commands.RPop(parts)
+		response = commands.RPop(parts)
 	case "TYPE":
-		return commands.Type(parts)
+		response = commands.Type(parts)
 	case "MULTI":
-		return commands.Multi(client)
+		response = commands.Multi(client)
 	case "XADD":
-		return commands.XAdd(parts)
+		response = commands.XAdd(parts)
 	case "XRANGE":
-		return commands.XRange(parts)
+		response = commands.XRange(parts)
 	case "XREAD":
-		return commands.XRead(parts)
+		response = commands.XRead(parts)
 	case "DISCARD":
-		return commands.Discard(client)
+		response = commands.Discard(client)
 	case "EXEC":
-		return commands.Exec(
+		response = commands.Exec(
 			client,
 			ExecuteImmediate,
 		)
 	case "WATCH":
-		return commands.Watch(
+		response = commands.Watch(
 			client,
 			parts,
 		)
 	case "UNWATCH":
-		return commands.UnWatch(client)
+		response = commands.UnWatch(client)
 	case "INFO":
-		return commands.Info(parts)
+		response = commands.Info(parts)
 	case "REPLCONF":
-		return commands.ReplConf(parts)
+		response = commands.ReplConf(parts)
 
 	case "PSYNC":
-		return commands.PSync(parts)
+		AddReplica(client.Conn)
+		response = commands.PSync(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
+
+
+
+	if commands.IsWritingCommand(
+		command,
+	) && !config.ServerConfig.IsReplica {
+
+		Propogate(parts)
+	}
+
+	return response
 }
 
 func IsValidCommand(

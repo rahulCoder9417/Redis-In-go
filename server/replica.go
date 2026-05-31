@@ -115,6 +115,27 @@ func ConnectToMaster() {
 	fmt.Println(
 		"replica handshake completed",
 	)
+	resp := NewResp(reader)
+
+	for {
+
+		command, err := resp.Read()
+
+		if err != nil {
+
+			fmt.Println(
+				"replica lost master connection:",
+				err,
+			)
+
+			return
+		}
+
+		fmt.Println(
+			"replica received:",
+			command,
+		)
+	}
 }
 
 func SendCommand(
