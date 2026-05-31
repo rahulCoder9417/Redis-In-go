@@ -6,8 +6,9 @@ import (
 	"net"
 	"strconv"
 	"strings"
-
+	"github.com/rahulCoder9417/Redis-in-go/server/commands"
 	"github.com/rahulCoder9417/Redis-in-go/server/config"
+	"github.com/rahulCoder9417/Redis-in-go/server/types"
 )
 
 func ConnectToMaster() {
@@ -101,7 +102,16 @@ func ConnectToMaster() {
 
 		return
 	}
+	err = commands.DiscardRDB(reader)
 
+
+	if err != nil {
+		fmt.Println(
+				"failed reading RDB:",
+				err,
+		)
+		return
+	}
 	fmt.Println(
 		"stored replication id:",
 		config.ServerConfig.ReplicationID,
@@ -117,9 +127,16 @@ func ConnectToMaster() {
 	)
 	resp := NewResp(reader)
 
+	fakeClient := &types.Client{}
+	
 	for {
 
 		command, err := resp.Read()
+
+		fmt.Printf(
+		"raw command: %#v\n",
+		command,
+	)
 
 		if err != nil {
 
@@ -131,9 +148,21 @@ func ConnectToMaster() {
 			return
 		}
 
-		fmt.Println(
-			"replica received:",
+		if len(command) == 0 {
+
+			continue
+		}
+
+		response := ExecuteImmediate(
+			fakeClient,
 			command,
+		)
+
+		fmt.Println(
+			"replicated:",
+			command,
+			"->",
+			response,
 		)
 	}
 }

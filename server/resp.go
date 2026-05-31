@@ -3,6 +3,7 @@ package server
 import(
 	"bufio"
 	"strconv"
+	"fmt"
 )
 
 type Resp struct{
@@ -32,10 +33,21 @@ func (r *Resp) Read() ([]string, error) {
 		return nil, err
 	}
 
-	if line[0] != '*' {
-		return nil, nil
+	if len(line) == 0 {
+
+		return nil,
+			fmt.Errorf(
+				"empty line",
+			)
 	}
 
+	if line[0] != '*' {
+
+		return nil,
+			fmt.Errorf(
+				"invalid RESP array",
+			)
+	}
 	count, err := strconv.Atoi(line[1:])
 
 	if err != nil {
@@ -57,6 +69,12 @@ func (r *Resp) Read() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+
+
+	fmt.Printf(
+		"RESP RAW LINE: %q\n",
+		arg,
+	)
 
 		parts = append(parts, arg)
 	}

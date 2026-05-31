@@ -13,7 +13,7 @@ func ReplConf(parts []string)string{
 	return RespSimpleString("OK")
 }
 
-func PSync(parts []string)string{
+func PSync(conn net.Conn, parts []string)string{
 	if len(parts) != 3 {
 		return RespError(
 			"wrong number of arguments for 'PSYNC'",
@@ -28,8 +28,15 @@ func PSync(parts []string)string{
 				10,
 			) +
 			"\r\n"
+// it the replica mis-reads the first propagated write as the RDB header.
+	if _, err := conn.Write([]byte(response)); err != nil {
+		return ""
+	}
 
-	return response
+	SendEmptyRDB(conn)
+
+	// everything was written directly to the connection.
+	return ""
 }
 
 
@@ -66,6 +73,14 @@ func SendEmptyRDB(conn net.Conn)error {
 	_, err =
 		conn.Write(
 			emptyRDB,
+		)
+	if err != nil {
+		return err
+	}
+
+	_, err =
+		conn.Write(
+			[]byte("\r\n"),
 		)
 
 	return err
@@ -106,7 +121,11 @@ func DiscardRDB(
 		return err
 	}
 
-	reader.ReadString('\n')
+	_, err = reader.ReadString('\n')
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
