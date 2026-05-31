@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rahulCoder9417/Redis-in-go/server"
+	"github.com/rahulCoder9417/Redis-in-go/server/types"
 	"github.com/rahulCoder9417/Redis-in-go/server/config"
 )
 
@@ -13,7 +13,7 @@ func Wait(
 )string{
 	if len(parts)!=3{
 		return RespError(
-			"wrong numbers of arguments for WAIT"
+			"wrong numbers of arguments for WAIT",
 		)
 	}
 
@@ -57,9 +57,9 @@ func Wait(
 
 		count := 0
 
-		server.ReplicaMu.Lock()
+		types.ReplicaMu.Lock()
 
-		for _, replica := range server.Replicas {
+		for _, replica := range types.Replicas {
 
 			if replica.AckOffset >=
 				targetOffset {
@@ -68,7 +68,7 @@ func Wait(
 			}
 		}
 
-		server.ReplicaMu.Unlock()
+		types.ReplicaMu.Unlock()
 
 		if count >= required {
 
