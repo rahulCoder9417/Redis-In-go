@@ -158,6 +158,15 @@ func ConnectToMaster() {
 			command,
 		)
 
+		config.ServerConfig.ReplicationOffset +=
+			int64(
+				len(
+					EncodeRESP(
+						command,
+					),
+				),
+			)
+
 		fmt.Println(
 			"replicated:",
 			command,

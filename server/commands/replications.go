@@ -28,14 +28,13 @@ func PSync(conn net.Conn, parts []string)string{
 				10,
 			) +
 			"\r\n"
-// it the replica mis-reads the first propagated write as the RDB header.
+
 	if _, err := conn.Write([]byte(response)); err != nil {
 		return ""
 	}
 
 	SendEmptyRDB(conn)
 
-	// everything was written directly to the connection.
 	return ""
 }
 
