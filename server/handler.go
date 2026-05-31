@@ -120,6 +120,8 @@ func ExecuteImmediate(client *types.Client, parts []string) string {
 	case "PSYNC":
 		response = commands.PSync(client.Conn, parts)
 		types.AddReplica(client.Conn)
+	case "WAIT":
+		response = commands.Wait(parts)
 	default:
 		return commands.RespError("unknown command")
 	}
@@ -166,7 +168,8 @@ func IsValidCommand(
 		"UNWATCH",
 		"INFO",
 		"REPLCONF",
-		"PSYNC":
+		"PSYNC",
+		"WAIT":
 		return true
 	}
 
